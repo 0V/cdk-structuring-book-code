@@ -1,0 +1,4 @@
+- name: Debug (safe)
+  run: |
+      # 最初の4文字のみ表示
+      echo "Database password starts with: ${DB_PASSWORD:0:4}****"

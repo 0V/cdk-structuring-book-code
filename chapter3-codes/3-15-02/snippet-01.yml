@@ -1,0 +1,10 @@
+# GitHub Actions
+- name: Install CloudFormation Guard
+  run: |
+      curl -L https://github.com/aws-cloudformation/cloudformation-guard/releases/latest/download/cfn-guard-v3-ubuntu-latest.tar.gz | tar xz
+      sudo mv cfn-guard /usr/local/bin/
+
+- name: Run policy checks
+  run: |
+      cdk synth
+      cfn-guard validate --rules policies/ --data cdk.out/ --show-summary all

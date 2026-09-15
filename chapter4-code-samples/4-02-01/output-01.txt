@@ -1,0 +1,7 @@
+my-infrastructure/          # リポジトリ
+├── stacks/
+│   ├── network/
+│   ├── database/
+│   └── application/
+└── constructs/
+    └── shared/

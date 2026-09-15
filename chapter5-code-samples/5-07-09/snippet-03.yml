@@ -1,0 +1,20 @@
+- name: Notify Slack on failure
+  if: failure()
+  uses: slackapi/slack-github-action@v4
+  with:
+      # 送信先の Webhook URL と種類を入力で指定する
+      webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+      webhook-type: incoming-webhook
+      payload: |
+          {
+            "text": "Deployment failed for ${{ github.repository }}",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "Deployment to *${{ steps.set-env.outputs.env_name }}* failed\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View workflow run>"
+                }
+              }
+            ]
+          }

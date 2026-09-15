@@ -1,0 +1,68 @@
+name: Detect CDK Drift
+
+on:
+    schedule:
+        - cron: "0 0 * * 1"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    id-token: write
+
+env:
+    AWS_REGION: ap-northeast-1
+    CDK_CLI_VERSION: "2.1017.0"
+
+jobs:
+    detect-drift:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v5
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+
+            - name: Setup Python
+              uses: actions/setup-python@v6
+              with:
+                  python-version: "3.12"
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+                  aws-region: ${{ env.AWS_REGION }}
+
+            - name: Install dependencies
+              run: |
+                  npm install --global aws-cdk@"${CDK_CLI_VERSION}"
+                  pip install -r requirements.txt
+
+            - name: Detect drift
+              id: drift
+              shell: bash
+              run: |
+                  set +e
+                  set -o pipefail
+                  cdk drift --all --fail 2>&1 | tee drift-output.txt
+                  status=${PIPESTATUS[0]}
+
+                  if grep -Eq "Number of resources with drift: [1-9]" drift-output.txt; then
+                      echo "result=drift" >> "$GITHUB_OUTPUT"
+                  elif [ "$status" -ne 0 ]; then
+                      echo "result=error" >> "$GITHUB_OUTPUT"
+                  else
+                      echo "result=clean" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Write summary
+              run: |
+                  echo "## CDK drift result: ${{ steps.drift.outputs.result }}" >> "$GITHUB_STEP_SUMMARY"
+                  cat drift-output.txt >> "$GITHUB_STEP_SUMMARY"
+
+            - name: Fail on drift or command error
+              if: steps.drift.outputs.result != 'clean'
+              run: exit 1

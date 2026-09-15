@@ -1,0 +1,35 @@
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            # ... デプロイのステップ ...
+
+            - name: CDK Deploy
+              run: npx cdk deploy --context "env=${{ steps.set-env.outputs.env_name }}" --require-approval never --all
+
+            # デプロイ完了後、少し待機
+            - name: Wait for deployment to stabilize
+              run: sleep 60
+
+            # ヘルスチェックエンドポイントにアクセス
+            - name: Health Check
+              run: |
+                  response=$(curl -s -o /dev/null -w "%{http_code}" https://api.example.com/health)
+                  if [ $response -ne 200 ]; then
+                    echo "Health check failed with status code: $response"
+                    exit 1
+                  fi
+                  echo "Health check passed"
+
+            # アプリケーションの動作確認
+            - name: Smoke Test
+              run: |
+                  # 簡単な動作確認テストを実行
+                  response=$(curl -s https://api.example.com/health)
+                  if echo "$response" | grep -q "healthy"; then
+                    echo "Smoke test passed"
+                  else
+                    echo "Smoke test failed"
+                    exit 1
+                  fi

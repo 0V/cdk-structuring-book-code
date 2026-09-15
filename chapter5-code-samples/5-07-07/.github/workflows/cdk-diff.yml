@@ -1,0 +1,85 @@
+name: CDK Diff on Pull Request
+
+on:
+    pull_request:
+        branches: [main, staging, develop]
+
+# レビュー前のコードを実行するため、権限は最小限にする
+permissions:
+    contents: read
+    pull-requests: write
+    id-token: write
+
+jobs:
+    diff:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v5
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+
+            # ターゲットブランチから環境名を決定
+            - name: Set environment name
+              id: set-env
+              run: |
+                  if [ "${{ github.base_ref }}" = "main" ]; then
+                    echo "env_name=prod" >> "$GITHUB_OUTPUT"
+                  elif [ "${{ github.base_ref }}" = "staging" ]; then
+                    echo "env_name=staging" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "env_name=dev" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  # cdk diffに必要な読み取り権限だけを持つロールを引き受ける
+                  role-to-assume: ${{ secrets.AWS_READONLY_ROLE_ARN }}
+                  aws-region: ap-northeast-1
+
+            - name: Install dependencies
+              run: npm ci
+
+            # cdk diffを実行して結果を保存
+            - name: CDK Diff
+              id: diff
+              run: |
+                  # diffの結果をファイルに保存
+                  npx cdk diff --context "env=${{ steps.set-env.outputs.env_name }}" > diff.txt 2>&1 || true
+
+                  # 結果をGitHub Outputに設定（マルチライン対応）
+                  {
+                    echo "diff<<EOF"
+                    cat diff.txt
+                    echo "EOF"
+                  } >> "$GITHUB_OUTPUT"
+
+            # diffの結果をプルリクエストにコメント
+            - name: Comment PR
+              uses: actions/github-script@v8
+              with:
+                  script: |
+                      const diff = `${{ steps.diff.outputs.diff }}`;
+                      const comment = `## CDK Diff Results
+
+                      Environment: \`${{ steps.set-env.outputs.env_name }}\`
+
+                      <details>
+                      <summary>Click to expand diff</summary>
+
+                      \`\`\`
+                      ${diff}
+                      \`\`\`
+
+                      </details>`;
+
+                      github.rest.issues.createComment({
+                        issue_number: context.issue.number,
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        body: comment
+                      });

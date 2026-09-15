@@ -1,0 +1,50 @@
+name: Deploy CDK Stacks
+
+on:
+    push:
+        branches:
+            - develop # 開発環境
+            - staging # ステージング環境
+            - main # 本番環境
+
+# OIDC認証でIAMロールを引き受けるためにid-tokenが必要
+permissions:
+    contents: read
+    id-token: write
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v5
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+
+            # ブランチ名から環境名を決定
+            - name: Set environment name
+              id: set-env
+              run: |
+                  if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+                    echo "env_name=prod" >> "$GITHUB_OUTPUT"
+                  elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+                    echo "env_name=staging" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "env_name=dev" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+                  aws-region: ap-northeast-1
+
+            - name: Install dependencies
+              run: npm ci
+
+            # 環境名を使ってデプロイ
+            - name: CDK Deploy
+              run: npx cdk deploy --context "env=${{ steps.set-env.outputs.env_name }}" --require-approval never --all

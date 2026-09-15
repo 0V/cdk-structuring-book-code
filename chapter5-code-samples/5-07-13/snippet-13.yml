@@ -1,0 +1,11 @@
+# ワークフロー全体の既定を読み取りのみにする
+permissions:
+    contents: read
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        # このジョブだけOIDCトークンの発行を許可する
+        permissions:
+            contents: read
+            id-token: write

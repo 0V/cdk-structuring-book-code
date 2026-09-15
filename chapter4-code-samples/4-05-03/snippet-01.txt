@@ -1,0 +1,26 @@
+my-company-cdk-constructs/
+├── pyproject.toml              # パッケージ設定
+├── README.md                   # ライブラリの使用方法
+├── CHANGELOG.md                # バージョン履歴
+├── requirements.txt            # 依存関係
+├── src/
+│   └── mycompany_constructs/
+│       ├── __init__.py         # パッケージ初期化
+│       ├── database/           # データベース関連
+│       │   ├── __init__.py
+│       │   ├── postgresql.py   # PostgreSQL用Construct
+│       │   └── mysql.py        # MySQL用Construct
+│       ├── compute/            # コンピュート関連
+│       │   ├── __init__.py
+│       │   ├── lambda_function.py  # Lambda用Construct
+│       │   └── ecs_service.py      # ECS用Construct
+│       └── networking/         # ネットワーク関連
+│           ├── __init__.py
+│           └── vpc.py          # VPC用Construct
+├── tests/                      # テストコード
+│   ├── test_database.py
+│   ├── test_compute.py
+│   └── test_networking.py
+└── examples/                   # 使用例
+    ├── basic_web_app.py
+    └── microservices_app.py

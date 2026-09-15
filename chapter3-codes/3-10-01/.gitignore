@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# CDK
+cdk.out/
+.cdk.staging/
+
+# OS
+.DS_Store

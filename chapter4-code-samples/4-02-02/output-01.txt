@@ -1,0 +1,5 @@
+src/
+├── lambda/           # Lambda関数
+├── dynamodb/         # DynamoDBテーブル
+├── s3/               # S3バケット
+└── api_gateway/      # API Gateway

@@ -1,0 +1,14 @@
+# インフラ関連のコードは必ずインフラチームのレビューが必要
+/infrastructure/ @infra-team
+/cdk/ @infra-team
+
+# セキュリティ関連の設定はセキュリティチームのレビューが必要
+**/security_group*.py @security-team
+**/iam_*.py @security-team
+
+# CI/CD設定の変更はDevOpsチームのレビューが必要
+/.github/ @devops-team
+/.gitlab-ci.yml @devops-team
+
+# 本番環境の設定は複数人のレビューが必要
+/environments/prod/ @infra-team @security-team

@@ -1,0 +1,7 @@
+{
+  "name": "cdk-book-chapter3-comparison",
+  "private": true,
+  "devDependencies": {
+    "aws-cdk": "2.1139.0"
+  }
+}

@@ -1,0 +1,7 @@
+# 悪い例：実行時に取得した値をログに出力している
+- name: Fetch and print secret
+  run: |
+      DB_PASSWORD=$(aws secretsmanager get-secret-value \
+        --secret-id prod/database/password \
+        --query SecretString --output text)
+      echo "Database password: $DB_PASSWORD"

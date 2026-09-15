@@ -1,0 +1,8 @@
+# Setup.sh / Setup.ps1 の生成物（バージョン管理しない）
+.venv/
+__pycache__/
+cdk.out/
+.cdk.staging/
+requirements-lock.txt
+.mypy_cache/
+.pytest_cache/

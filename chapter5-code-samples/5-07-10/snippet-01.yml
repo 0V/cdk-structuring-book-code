@@ -1,0 +1,65 @@
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v5
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+                  aws-region: ap-northeast-1
+
+            - name: Install dependencies
+              run: npm ci
+
+            # デプロイを実行（失敗しても続行）
+            - name: CDK Deploy
+              id: deploy
+              run: npx cdk deploy --context env=prod --require-approval never --all
+              continue-on-error: true
+
+            # デプロイが成功した場合のみヘルスチェックを実行
+            - name: Health Check
+              id: health-check
+              if: steps.deploy.outcome == 'success'
+              run: |
+                  sleep 60
+                  response=$(curl -s -o /dev/null -w "%{http_code}" https://api.example.com/health)
+                  if [ $response -ne 200 ]; then
+                    echo "Health check failed"
+                    exit 1
+                  fi
+              continue-on-error: true
+
+            # デプロイとヘルスチェックが成功したcommitをタグとして記録
+            - name: Record successful deployment
+              if: steps.deploy.outcome == 'success' && steps.health-check.outcome == 'success'
+              run: |
+                  git tag --force last-deployed-prod ${{ github.sha }}
+                  git push --force origin refs/tags/last-deployed-prod
+
+            # デプロイまたはヘルスチェックが失敗した場合にロールバック
+            - name: Rollback on failure
+              if: steps.deploy.outcome == 'failure' || steps.health-check.outcome == 'failure'
+              run: |
+                  echo "Deployment or health check failed. Rolling back..."
+
+                  # 前回デプロイに成功したcommitをチェックアウト
+                  git fetch origin --tags
+                  git checkout refs/tags/last-deployed-prod
+
+                  # 前回成功したバージョンを再デプロイ
+                  npm ci
+                  npx cdk deploy --context env=prod --require-approval never --all
+
+            # ロールバックが実行された場合は失敗として扱う
+            - name: Fail if rollback was executed
+              if: steps.deploy.outcome == 'failure' || steps.health-check.outcome == 'failure'
+              run: exit 1

@@ -1,0 +1,14 @@
+name: Deploy to Production
+
+on:
+    push:
+        branches: [main]
+
+# 同じ環境への並行実行を防ぐ
+concurrency:
+    group: deploy-production
+    cancel-in-progress: false # 実行中のデプロイはキャンセルしない
+
+jobs:
+    deploy:
+        # ... デプロイのステップ ...

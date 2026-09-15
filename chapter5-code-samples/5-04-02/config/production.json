@@ -1,0 +1,12 @@
+{
+    "environment": "prod",
+    "database": {
+        "instanceType": "r5.large",
+        "multiAz": true,
+        "backupRetention": 7
+    },
+    "lambda": {
+        "memorySize": 512,
+        "timeout": 30
+    }
+}

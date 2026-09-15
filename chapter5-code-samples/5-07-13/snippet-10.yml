@@ -1,0 +1,8 @@
+- name: Fetch secret and mask it
+  run: |
+      DB_PASSWORD=$(aws secretsmanager get-secret-value \
+        --secret-id prod/database/password \
+        --query SecretString --output text)
+      # 取得した値をマスク対象に登録してから使う
+      echo "::add-mask::$DB_PASSWORD"
+      echo "DB_PASSWORD=$DB_PASSWORD" >> $GITHUB_ENV

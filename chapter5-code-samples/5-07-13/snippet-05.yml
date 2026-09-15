@@ -1,0 +1,7 @@
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        timeout-minutes: 120 # 2時間に設定
+
+        steps:
+            # ... デプロイのステップ ...

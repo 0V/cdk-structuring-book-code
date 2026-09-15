@@ -1,0 +1,5 @@
+- name: Clear cache on schedule
+  if: github.event_name == 'schedule'
+  run: |
+      rm -rf node_modules
+      npm ci

@@ -1,0 +1,22 @@
+name: Deploy to Production
+on:
+    push:
+        branches: [main]
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        environment: production # 本番環境用のSecretsを使用
+        steps:
+            - uses: actions/checkout@v5
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ secrets.AWS_ROLE_ARN }} # Secretsから取得
+                  aws-region: ap-northeast-1
+            - name: Deploy CDK Stack
+              env:
+                  EXTERNAL_API_KEY: ${{ secrets.EXTERNAL_API_KEY }} # 外部APIキー
+              run: |
+                  npm ci
+                  npx cdk deploy --require-approval never

@@ -1,0 +1,7 @@
+- name: Rollback Blue-Green Deployment
+  if: steps.health-check.outcome == 'failure'
+  run: |
+      # ALBのターゲットグループのウェイトを元に戻す
+      aws elbv2 modify-listener \
+        --listener-arn ${{ secrets.ALB_LISTENER_ARN }} \
+        --default-actions Type=forward,TargetGroupArn=${{ secrets.BLUE_TARGET_GROUP_ARN }}

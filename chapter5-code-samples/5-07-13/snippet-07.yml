@@ -1,0 +1,8 @@
+- name: Cache node modules
+  uses: actions/cache@v6
+  with:
+      path: node_modules
+      # package-lock.jsonのハッシュをキーに使用
+      key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+      restore-keys: |
+          ${{ runner.os }}-node-

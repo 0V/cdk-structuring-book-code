@@ -1,0 +1,5 @@
+# タグ参照：タグの付け替えで参照先のコードが変わる可能性がある
+- uses: actions/checkout@v5
+
+# commitSHA固定：参照先のコードが変わらない
+- uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

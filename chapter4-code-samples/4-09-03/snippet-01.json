@@ -1,0 +1,5 @@
+{
+    "CdkImportDemoStack/ImportedBucket/Resource": {
+        "BucketName": "my-existing-bucket"
+    }
+}

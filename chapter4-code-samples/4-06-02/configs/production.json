@@ -1,0 +1,8 @@
+{
+  "environment": "production",
+  "database": {
+    "instance_class": "db.r5.large",
+    "backup_retention_days": 30,
+    "multi_az": true
+  }
+}

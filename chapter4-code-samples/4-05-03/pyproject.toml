@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mycompany-cdk-constructs"
+description = "CDK Constructs for MyCompany"
+readme = "README.md"                      # README.mdを長い説明として使用
+requires-python = ">=3.12"
+license = "MIT"
+authors = [
+    { name = "MyCompany Infrastructure Team", email = "infra@mycompany.com" },
+]
+keywords = ["aws", "cdk", "infrastructure", "constructs"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "aws-cdk-lib>=2.0.0,<3.0.0",
+    "constructs>=10.0.0,<11.0.0",
+]
+# バージョンはコード側の __version__ から読み込む
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/mycompany/cdk-constructs"
+
+[tool.setuptools.dynamic]
+version = { attr = "mycompany_constructs.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]

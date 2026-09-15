@@ -1,0 +1,24 @@
+# S3バケットは必ずパブリックアクセスをブロックする
+AWS::S3::Bucket {
+    Properties {
+        PublicAccessBlockConfiguration exists
+        PublicAccessBlockConfiguration {
+            BlockPublicAcls == true
+            BlockPublicPolicy == true
+        }
+    }
+}
+
+# EC2インスタンスは承認されたインスタンスタイプのみ使用可能
+AWS::EC2::Instance {
+    Properties {
+        InstanceType IN ["t3.micro", "t3.small", "t3.medium"]
+    }
+}
+
+# RDSインスタンスは必ず暗号化を有効にする
+AWS::RDS::DBInstance {
+    Properties {
+        StorageEncrypted == true
+    }
+}

@@ -1,0 +1,11 @@
+src/
+├── stacks/           # Stack定義
+│   ├── network.py
+│   ├── database.py
+│   └── application.py
+├── constructs/       # 再利用可能なConstruct
+│   ├── vpc.py
+│   └── rds.py
+└── configs/          # 環境別設定
+    ├── dev.py
+    └── prod.py

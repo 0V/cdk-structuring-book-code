@@ -1,0 +1,18 @@
+// 開発・検証用アカウントでの例（本番環境には使用しない）
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:*",
+                "s3:*",
+                "lambda:*",
+                "iam:*",
+                "logs:*",
+                "ec2:Describe*"
+            ],
+            "Resource": "*"
+        }
+    ]
+}

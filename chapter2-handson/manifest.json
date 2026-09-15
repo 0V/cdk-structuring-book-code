@@ -1,0 +1,280 @@
+{
+  "$comment": [
+    "chapter2-handson の節定義。tools/ の各検査はこのファイルを唯一の入力とする。",
+    "節集合が原稿と一致していることは tools/code-sync-check.py が検証するため、",
+    "原稿に節が増減したらこのファイルを直さないと検査が落ちる。",
+    "id は 章-節-小節（H3）。採番の根拠は tools/part3-mapping.md を参照。",
+    "原稿はフェンスに title=\"パス\" で対象ファイルを明示する記法を使う。"
+  ],
+  "manuscript": "src/part3/aws-cdk-basis.md",
+  "chapter": 2,
+  "root": "chapter2-handson",
+  "baseline": "2-03-03",
+  "baseline_note": "cdk init の生成物であり原稿にコードブロックがない。以降の節はここを起点に差分を重ねる。",
+  "unchecked_files": [
+    "cdk.json",
+    "requirements.txt",
+    "requirements-dev.txt",
+    "README.md",
+    ".gitignore",
+    "source.bat"
+  ],
+  "unchecked_note": "cdk init の生成物で原稿がコードブロックとして示さないファイル。",
+  "ignore_blocks": [
+    {
+      "section": "2-09-02",
+      "expect_head": "cfn_stage = self.api.deployment_stage.node.default_child",
+      "lines": 2,
+      "reason": "「このコードのポイントは以下の部分です」の引用。フェンスに title が付いているが書き込み対象ではない。"
+    }
+  ],
+  "excluded_sections": [
+    "2-05-02",
+    "2-08-04",
+    "2-08-07"
+  ],
+  "excluded_sections_note": [
+    "2-05-02（L3 Construct）は原稿が title=\"L3 Constructの参考例\" と明示しており、",
+    "書き込み対象のファイルではないためディレクトリを作らない。",
+    "2-08-04 の custom-bootstrap.yaml と 2-08-07 の .github/workflows/bootstrap.yml は",
+    "いずれも説明用の抜粋で、訪問者カウンターアプリの一部ではない。"
+  ],
+  "sections": [
+    {
+      "id": "2-03-03",
+      "title": "CDKプロジェクトの初期化",
+      "stacks": [
+        "VisitorCounterAppStack"
+      ],
+      "synth": true,
+      "deploy": false,
+      "deploy_note": "Stack が空のためデプロイしない。原稿の初回デプロイは 2-04-06 で、コード状態は 2-04-04 と同じ。"
+    },
+    {
+      "id": "2-03-04",
+      "title": "最初のStackを作成する",
+      "stacks": [
+        "VisitorCounterAppStack"
+      ],
+      "synth": true,
+      "deploy": true,
+      "deploy_note": "原稿 2-04-06 の初回デプロイと 2-4-7 のリソース確認に対応する。",
+      "verify": [
+        {
+          "kind": "aws",
+          "service": "dynamodb",
+          "op": "list-tables",
+          "expect_match": "VisitorCounterAppStack-VisitsTable"
+        }
+      ]
+    },
+    {
+      "id": "2-03-08",
+      "title": "Lambda関数の追加と差分確認",
+      "stacks": [
+        "VisitorCounterAppStack"
+      ],
+      "synth": true,
+      "deploy": true
+    },
+    {
+      "id": "2-03-09",
+      "title": "API Gatewayの追加と動作確認",
+      "stacks": [
+        "VisitorCounterAppStack"
+      ],
+      "synth": true,
+      "deploy": true,
+      "api_output": "ApiEndpoint",
+      "verify": [
+        {
+          "kind": "http",
+          "method": "POST",
+          "path": "visits",
+          "body": {
+            "page": "/home"
+          },
+          "expect_status": 200,
+          "expect_keys": [
+            "visit_id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2-04-02",
+      "title": "統計取得用Lambda関数の追加",
+      "stacks": [
+        "VisitorCounterAppStack"
+      ],
+      "synth": true,
+      "deploy": true,
+      "api_output": "ApiEndpoint",
+      "verify": [
+        {
+          "kind": "http",
+          "method": "POST",
+          "path": "visits",
+          "body": {
+            "page": "/home"
+          },
+          "expect_status": 200,
+          "expect_keys": [
+            "visit_id"
+          ]
+        },
+        {
+          "kind": "http",
+          "method": "GET",
+          "path": "visits/stats",
+          "expect_status": 200,
+          "expect_keys": [
+            "period_days",
+            "total_visits",
+            "top_pages"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2-04-03",
+      "title": "プロジェクト構造の整理とConstruct",
+      "stacks": [
+        "VisitorCounterAppStack"
+      ],
+      "synth": true,
+      "synth_note": "旧 Stack ファイルはまだ残しているため synth は通る。削除は 2-5-6 で行う。",
+      "deploy": false,
+      "creates_files": [
+        "visitor_counter_app/stacks/__init__.py",
+        "visitor_counter_app/constructs/__init__.py"
+      ],
+      "creates_files_note": "原稿 2-05-03 の shell ブロックが touch で作る空ファイル。"
+    },
+    {
+      "id": "2-04-04",
+      "title": "ConstructをStackへ組み込む",
+      "stacks": [
+        "VisitorCounterAppStack"
+      ],
+      "synth": true,
+      "deploy": false
+    },
+    {
+      "id": "2-04-05",
+      "title": "Appで新旧Stackを並行して定義する",
+      "stacks": [
+        "VisitorCounterAppStack",
+        "VisitorCounterStack"
+      ],
+      "synth": true,
+      "deploy": false,
+      "stack_id_note": "移行中は App に旧 Stack と新 Stack の両方を定義する。新構成を確認してから旧 Stack を削除できる。"
+    },
+    {
+      "id": "2-04-06",
+      "title": "新構成の検証と切り替え",
+      "stacks": [
+        "VisitorCounterStack"
+      ],
+      "synth": true,
+      "deploy": true,
+      "api_output": "ApiEndpoint",
+      "deletes": [
+        "visitor_counter_app/visitor_counter_app_stack.py"
+      ],
+      "deletes_note": "新構成を検証したあとに旧 Stack ファイルを削除する。",
+      "verify": [
+        {
+          "kind": "http",
+          "method": "GET",
+          "path": "visits/stats",
+          "expect_status": 200,
+          "expect_keys": [
+            "period_days",
+            "total_visits",
+            "top_pages"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2-05-01",
+      "title": "L1 Construct: CloudFormationの直接マッピング",
+      "stacks": [
+        "VisitorCounterStack"
+      ],
+      "synth": true,
+      "deploy": true
+    },
+    {
+      "id": "2-05-03",
+      "title": "L2 Construct: 便利機能付きの高レベルAPI (推奨)",
+      "stacks": [
+        "VisitorCounterStack"
+      ],
+      "synth": true,
+      "deploy": true
+    },
+    {
+      "id": "2-06-03",
+      "title": "Fn::ImportValueとExportによる値の受け渡し",
+      "stacks": [
+        "VisitorCounterStack",
+        "ReportStack"
+      ],
+      "synth": true,
+      "deploy": true
+    },
+    {
+      "id": "2-06-04",
+      "title": "クロスStack参照による直接参照",
+      "stacks": [
+        "VisitorCounterStack",
+        "ReportStack"
+      ],
+      "synth": true,
+      "deploy": true
+    },
+    {
+      "id": "2-06-05",
+      "title": "環境変数とSSMパラメータを活用した疎結合",
+      "stacks": [
+        "VisitorCounterStack",
+        "ReportStack"
+      ],
+      "synth": true,
+      "deploy": true
+    },
+    {
+      "id": "2-09-02",
+      "title": "訪問者カウンターアプリでのエスケープハッチ活用",
+      "stacks": [
+        "VisitorCounterStack",
+        "ReportStack"
+      ],
+      "synth": true,
+      "deploy": true,
+      "append": [
+        {
+          "file": "visitor_counter_app/constructs/visitor_counter.py",
+          "insert": "end_of_init",
+          "reindent": true,
+          "note": "原稿は __init__ の末尾に追加すると明示しており、字下げも 8 スペースで示されている。"
+        }
+      ]
+    },
+    {
+      "id": "2-10-02",
+      "title": "実践的な活用例: DynamoDBバックアップカスタムリソース",
+      "stacks": [
+        "VisitorCounterStack",
+        "ReportStack"
+      ],
+      "synth": true,
+      "deploy": true
+    }
+  ],
+  "source_commit": "ecfb2486260b8aded90466e19a56094d8429d945",
+  "source_path": "src/part3/aws-cdk-basis.md"
+}

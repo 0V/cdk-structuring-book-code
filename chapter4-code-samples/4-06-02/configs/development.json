@@ -1,0 +1,8 @@
+{
+  "environment": "development",
+  "database": {
+    "instance_class": "db.t3.micro",
+    "backup_retention_days": 1,
+    "multi_az": false
+  }
+}

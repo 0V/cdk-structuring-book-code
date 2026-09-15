@@ -1,0 +1,83 @@
+name: Deploy with Environments
+
+on:
+    push:
+        branches: [develop, staging, main]
+
+jobs:
+    # 開発環境へのデプロイ
+    deploy-dev:
+        if: github.ref == 'refs/heads/develop'
+        runs-on: ubuntu-latest
+        environment: development # 環境を指定
+
+        steps:
+            - uses: actions/checkout@v5
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ secrets.AWS_ROLE_ARN }} # 環境ごとのSecret
+                  aws-region: ap-northeast-1
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: CDK Deploy
+              run: npx cdk deploy --context env=dev --require-approval never --all
+
+    # ステージング環境へのデプロイ
+    deploy-staging:
+        if: github.ref == 'refs/heads/staging'
+        runs-on: ubuntu-latest
+        environment: staging
+
+        steps:
+            # 同様のステップ
+            - uses: actions/checkout@v5
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+                  aws-region: ap-northeast-1
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: CDK Deploy
+              run: npx cdk deploy --context env=staging --require-approval never --all
+
+    # 本番環境へのデプロイ（承認が必要）
+    deploy-prod:
+        if: github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        environment: production # 承認プロセスが設定された環境
+
+        steps:
+            # 同様のステップ
+            - uses: actions/checkout@v5
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+                  aws-region: ap-northeast-1
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: CDK Deploy
+              run: npx cdk deploy --context env=prod --require-approval never --all

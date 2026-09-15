@@ -1,0 +1,15 @@
+// 本番環境での例：Bootstrap が作成したロールを引き受ける権限のみを付与する
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "sts:AssumeRole",
+            "Resource": [
+                "arn:aws:iam::123456789012:role/cdk-hnb659fds-deploy-role-123456789012-ap-northeast-1",
+                "arn:aws:iam::123456789012:role/cdk-hnb659fds-file-publishing-role-123456789012-ap-northeast-1",
+                "arn:aws:iam::123456789012:role/cdk-hnb659fds-lookup-role-123456789012-ap-northeast-1"
+            ]
+        }
+    ]
+}

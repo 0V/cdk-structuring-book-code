@@ -1,0 +1,5 @@
+CdkImportDemoStack
+CdkImportDemoStack/ImportedBucket/Resource (AWS::S3::Bucket): import with BucketName=my-existing-bucket (y/n) y
+CdkImportDemoStack: importing resources into stack...
+ ✅  CdkImportDemoStack
+Import operation complete. We recommend you run a drift detection operation to confirm your CDK app resource definitions are up-to-date.
