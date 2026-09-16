@@ -1,0 +1,2 @@
+AWS CDK実践ガイド─クラウドインフラをコードで構造化する サンプルコード
+Copyright 2026 Ken Sakamoto, Yuta Tsuji, Masaaki Sakagami, Makoto Ishizuchi
